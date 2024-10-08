@@ -14,12 +14,7 @@ type Function struct {
 
 func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 	for _, rp := range p.Replacements {
-		resources, err := SelectNodes(rp.Source.Selector, nodes...)
-		if err != nil {
-			return nil, err
-		}
-
-		source, err := SelectSource(rp, resources...)
+		source, err := SelectSource(rp, nodes...)
 		if err != nil {
 			return nil, err
 		}
@@ -28,25 +23,65 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 			continue
 		}
 
-		s, err := source.String()
+		sm, err := source.Map()
 		if err != nil {
 			return nil, err
 		}
 
-		fmt.Println(">>> ", s)
+		for _, t := range rp.Targets {
+			targetNodes, err := SelectNodes(t.Selector, nodes...)
+			if err != nil {
+				return nil, err
+			}
 
+			for _, tn := range targetNodes {
+				tm, err := tn.Map()
+				if err != nil {
+					return nil, err
+				}
+
+				for _, r := range t.Expressions {
+					sq, err := gojq.Parse(r)
+					if err != nil {
+						return nil, fmt.Errorf("unable to parse expression %s, %w", r, err)
+					}
+
+					sqc, err := gojq.Compile(sq, gojq.WithVariables([]string{"$s"}))
+					if err != nil {
+						return nil, fmt.Errorf("unable to compile expression %s, %w", r, err)
+					}
+
+					sv, err := Run(sqc, tm, sm)
+					if err != nil {
+						return nil, err
+					}
+
+					b, err := yaml.Marshal(sv)
+					if err != nil {
+						return nil, err
+					}
+
+					fmt.Println(string(b))
+				}
+			}
+		}
 	}
 
 	return nil, nil
 }
 
 func SelectSource(replacement Replacement, nodes ...*yaml.RNode) (*yaml.RNode, error) {
+	resources, err := SelectNodes(replacement.Source.Selector, nodes...)
+	if err != nil {
+		return nil, err
+	}
+
 	query, err := gojq.Parse(replacement.Source.Expression)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse expression %s, %w", replacement.Source.Expression, err)
 	}
 
-	for _, r := range nodes {
+	for _, r := range resources {
 		data, err := r.Map()
 		if err != nil {
 			return nil, err

@@ -33,3 +33,19 @@ func Matches(query *gojq.Query, data map[string]interface{}) (bool, error) {
 
 	return false, nil
 }
+
+func Run(query *gojq.Code, data map[string]interface{}, values ...any) (any, error) {
+
+	it := query.Run(data, values...)
+
+	v, ok := it.Next()
+	if !ok {
+		return nil, nil
+	}
+
+	if err, ok := v.(error); ok {
+		return nil, err
+	}
+
+	return v, nil
+}

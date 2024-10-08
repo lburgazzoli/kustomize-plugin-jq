@@ -28,10 +28,5 @@ type Source struct {
 
 type Target struct {
 	types.Selector `json:",inline,omitempty" yaml:",inline,omitempty"`
-	Replacements   []Replace `json:"replacements,omitempty"yaml:"replacements,omitempty"`
-}
-
-type Replace struct {
-	Source string `json:"source,omitempty" yaml:"source,omitempty"`
-	Target string `json:"target,omitempty" yaml:"target,omitempty"`
+	Expressions    []string `json:"expressions,omitempty" yaml:"expressions,omitempty"`
 }

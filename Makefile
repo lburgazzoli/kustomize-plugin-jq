@@ -53,7 +53,7 @@ fmt: goimport
 
 .PHONY: test
 test:
-	$(PROJECT_PATH)/hack/scripts/test.sh
+	go test -v ./...
 
 .PHONY: deps
 deps:

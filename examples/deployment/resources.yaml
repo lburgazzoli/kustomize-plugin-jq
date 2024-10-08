@@ -10,8 +10,8 @@ spec:
       fixed:
         resources:
           limits:
-            cpu: 100m
-            memory: 1Gi
+            cpu: 123m
+            memory: 456i
 ---
 apiVersion: apps/v1
 kind: Deployment
