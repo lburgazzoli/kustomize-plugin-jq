@@ -12,6 +12,8 @@ GOLANGCI ?= $(LOCALBIN)/golangci-lint
 GOLANGCI_VERSION ?= v1.60.1
 YQ ?= $(LOCALBIN)/yq
 KUBECTL ?= kubectl
+KO ?= $(LOCALBIN)/ko
+KO_VERSION ?= latest
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -59,6 +61,10 @@ test:
 deps:
 	go mod tidy
 
+.PHONY: publish
+publish: ko ## Deploy test app.
+	KO_DOCKER_REPO=quay.io/lburgazzoli $(LOCALBIN)/ko build -B .
+
 .PHONY: check/lint
 check: check/lint
 
@@ -91,3 +97,9 @@ yq: $(YQ)
 $(YQ): $(LOCALBIN)
 	@test -s $(LOCALBIN)/yq || \
 	GOBIN=$(LOCALBIN) go install github.com/mikefarah/yq/v4@latest
+
+.PHONY: ko
+ko: $(KO)
+$(KO): $(LOCALBIN)
+	@test -s $(LOCALBIN)/ko || \
+	GOBIN=$(LOCALBIN) go install github.com/google/ko@$(KO_VERSION)

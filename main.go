@@ -23,7 +23,7 @@ func main() {
 		}),
 	}
 
-	cmd := command.Build(p, command.StandaloneEnabled, false)
+	cmd := command.Build(p, command.StandaloneDisabled, false)
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
