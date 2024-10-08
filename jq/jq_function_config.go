@@ -6,7 +6,7 @@ import (
 
 type Configuration struct {
 	Metadata ConfigurationMeta `json:"metadata" yaml:"metadata"`
-	Spec     ConfigurationSpec `json:"spec" yaml:"spec"`
+	Spec     ConfigurationSpec `json:"spec"     yaml:"spec"`
 }
 
 type ConfigurationMeta struct {
@@ -23,7 +23,7 @@ type Replacement struct {
 
 type Source struct {
 	types.Selector `json:",inline,omitempty" yaml:",inline,omitempty"`
-	Expression     string `json:"expression,omitempty"yaml:"expression,omitempty"`
+	Expression     string `json:"expression,omitempty" yaml:"expression,omitempty"`
 }
 
 type Target struct {

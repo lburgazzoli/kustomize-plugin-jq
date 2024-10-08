@@ -17,3 +17,6 @@ linters:
     - depguard
     - gci
     - gofumpt
+    - tagalign
+    - err113
+    - nilnil

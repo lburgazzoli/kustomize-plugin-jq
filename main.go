@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
 	"os"
+
+	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework/command"
 	"sigs.k8s.io/kustomize/kyaml/kio"

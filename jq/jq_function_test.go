@@ -1,12 +1,13 @@
 package jq_test
 
 import (
-	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
 	"os"
+	"strings"
+
+	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
-	"strings"
 
 	"testing"
 
@@ -86,6 +87,8 @@ spec:
 `
 
 func TestJS(t *testing.T) {
+	t.Parallel()
+
 	g := NewWithT(t)
 	cfg := jq.Configuration{}
 
@@ -109,5 +112,5 @@ func TestJS(t *testing.T) {
 	}
 
 	err := framework.Execute(p, rw)
-	g.Expect(err).To(BeNil())
+	g.Expect(err).ToNot(HaveOccurred())
 }

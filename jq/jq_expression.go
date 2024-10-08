@@ -2,6 +2,7 @@ package jq
 
 import (
 	"fmt"
+
 	"github.com/itchyny/gojq"
 )
 
@@ -15,7 +16,6 @@ func MatchesE(expression string, data map[string]interface{}) (bool, error) {
 }
 
 func Matches(query *gojq.Query, data map[string]interface{}) (bool, error) {
-
 	it := query.Run(data)
 
 	v, ok := it.Next()
@@ -35,7 +35,6 @@ func Matches(query *gojq.Query, data map[string]interface{}) (bool, error) {
 }
 
 func Run(query *gojq.Code, data map[string]interface{}, values ...any) (any, error) {
-
 	it := query.Run(data, values...)
 
 	v, ok := it.Next()
