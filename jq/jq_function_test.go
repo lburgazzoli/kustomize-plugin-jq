@@ -1,7 +1,8 @@
 package jq_test
 
 import (
-	"os"
+	"errors"
+	"io"
 	"strings"
 
 	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
@@ -12,6 +13,8 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
+
+	gyq "github.com/lburgazzoli/gomega-matchers/pkg/matchers/yq"
 )
 
 const c = `
@@ -54,7 +57,7 @@ spec:
         resources:
           limits:
             cpu: 123m
-            memory: 456i
+            memory: 456Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -103,8 +106,10 @@ func TestJS(t *testing.T) {
 		}),
 	}
 
+	w := DocumentSplitter{}
+
 	rw := &kio.ByteReadWriter{
-		Writer:                os.Stdout,
+		Writer:                &w,
 		KeepReaderAnnotations: false,
 		NoWrap:                true,
 		FunctionConfig:        yaml.MustParse(c),
@@ -113,4 +118,58 @@ func TestJS(t *testing.T) {
 
 	err := framework.Execute(p, rw)
 	g.Expect(err).ToNot(HaveOccurred())
+
+	items, err := w.Items()
+	g.Expect(err).ToNot(HaveOccurred())
+	g.Expect(items).To(HaveLen(2))
+
+	g.Expect(items[1]).Should(
+		WithTransform(gyq.Extract(`.spec.template.spec.containers[0].resources.limits`),
+			And(
+				gyq.Match(`.cpu == "123m"`),
+				gyq.Match(`.memory == "456Mi"`),
+			),
+		),
+	)
+}
+
+type DocumentSplitter struct {
+	buffer strings.Builder
+}
+
+func (in *DocumentSplitter) Write(p []byte) (int, error) {
+	return in.buffer.Write(p)
+}
+
+func (in *DocumentSplitter) Reset() {
+	in.buffer.Reset()
+}
+
+func (in *DocumentSplitter) Items() ([]string, error) {
+	items := make([]string, 0)
+
+	r := strings.NewReader(in.buffer.String())
+	dec := yaml.NewDecoder(r)
+
+	for {
+		var node yaml.Node
+
+		err := dec.Decode(&node)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		item, err := yaml.Marshal(&node)
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, string(item))
+	}
+
+	return items, nil
 }

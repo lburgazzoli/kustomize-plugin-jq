@@ -13,7 +13,7 @@ type Function struct {
 	Replacements []Replacement `json:"replacements,omitempty" yaml:"replacements,omitempty"`
 }
 
-//nolint:gocognit
+//nolint:gocognit,cyclop
 func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 	for _, rp := range p.Replacements {
 		source, err := SelectSource(rp, nodes...)
@@ -27,7 +27,7 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 
 		sm, err := source.Map()
 		if err != nil {
-			return nil, fmt.Errorf("unable to map source for replacement %v: %v", rp, err)
+			return nil, fmt.Errorf("unable to map source for replacement %v: %w", rp, err)
 		}
 
 		for _, t := range rp.Targets {
@@ -37,11 +37,10 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 			}
 
 			for _, tn := range targetNodes {
-
 				for _, r := range t.Expressions {
 					tm, err := tn.Map()
 					if err != nil {
-						return nil, fmt.Errorf("unable to map target %v: %v", tn, err)
+						return nil, fmt.Errorf("unable to map target %v: %w", tn, err)
 					}
 
 					sq, err := gojq.Parse(r)
@@ -59,19 +58,18 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 						return nil, err
 					}
 
-					n, err := yaml.FromMap(v.[map[string]any])
+					n, err := yaml.FromMap(v.(map[string]any))
 					if err != nil {
-						return nil, err
+						return nil, fmt.Errorf("unable to map target %v: %w", tn, err)
 					}
 
 					*tn = *n
-
 				}
 			}
 		}
 	}
 
-	return nil, nil
+	return nodes, nil
 }
 
 func SelectSource(replacement Replacement, nodes ...*yaml.RNode) (*yaml.RNode, error) {
