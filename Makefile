@@ -31,7 +31,15 @@ SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
 .PHONY: all
-all: test
+all: build
+
+.PHONY: build
+build: $(LOCALBIN)
+	go build -o $(LOCALBIN)/jq-transform main.go
+
+.PHONY: run
+run:
+	go run main.go examples/deployment/jq-config.yaml examples/deployment/resources.yaml
 
 .PHONY: clean
 clean:
@@ -45,7 +53,7 @@ fmt: goimport
 
 .PHONY: test
 test:
-	go test -v ./...
+	$(PROJECT_PATH)/hack/scripts/test.sh
 
 .PHONY: deps
 deps:

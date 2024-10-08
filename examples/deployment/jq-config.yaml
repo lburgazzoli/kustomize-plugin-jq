@@ -1,0 +1,23 @@
+apiVersion: kustomize.opendatahub.io/v1alpha1
+kind: JQTransform
+metadata:
+  name: jq-transformer
+  annotations:
+    config.kubernetes.io/function: |
+      exec:
+        path: ../../bin/jq-transform
+spec:
+  replacements:
+    - source:
+        group: components.opendatahub.io
+        version: v1alpha1
+        kind: Configuration
+        name: foo-config
+        expression: '.spec.configuration.resources.type == "fixed"'
+      targets:
+      - group: apps
+        version: v1
+        kind: Deployment
+        replacements:
+        - source: '.spec.configuration.resources.fixed.resources.limits'
+          target: '.spec.template.spec.containers | select(.name == "controller") | .resources.limits'
