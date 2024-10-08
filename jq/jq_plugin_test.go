@@ -2,8 +2,9 @@ package jq_test
 
 import (
 	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
+	"sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/kustomize/kyaml/resid"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/kustomize/api/provider"
 
 	"testing"
@@ -30,7 +31,7 @@ const d = `
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: testdeployment
+  name: foo-deployment
 spec:
   replicas: 3
   selector:
@@ -64,26 +65,26 @@ func TestJQ(t *testing.T) {
 		Replacements: []jq.Replacement{
 			{
 				Source: jq.Source{
-					GVK: schema.GroupVersionKind{
-						Version: "v1",
-						Kind:    "ConfigMap",
+					Selector: types.Selector{
+						ResId: resid.ResId{
+							Gvk:  resid.NewGvk("components.opendatahub.io", "v1alpha1", "Configuration"),
+							Name: "foo-config",
+						},
 					},
-					Name: "coo-config",
-				},
-				Selector: jq.Selector{
-					Expression: `.data.configuration.resources.type == "fixed"`,
+					Expression: `.spec.configuration.resources.type == "fixed"`,
 				},
 				Targets: []jq.Target{
 					{
-						GVK: schema.GroupVersionKind{
-							Version: "v1",
-							Kind:    "ConfigMap",
+						Selector: types.Selector{
+							ResId: resid.ResId{
+								Gvk:  resid.NewGvk("apps", "v1", "Deployment"),
+								Name: "foo-deployment",
+							},
 						},
-						Name: "foo-deployment",
 						Replacements: []jq.Replace{
 							{
-								Selector: ".spec.template.spec.containers | select(.name == \"controller\") | .resources.limits",
-								With:     ".spec.configuration.resources.fixed.resources.limits",
+								Source: ".spec.configuration.resources.fixed.resources.limits",
+								Target: ".spec.template.spec.containers | select(.name == \"controller\") | .resources.limits",
 							},
 						},
 					},

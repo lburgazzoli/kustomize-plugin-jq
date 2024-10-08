@@ -1,29 +1,29 @@
 package jq
 
-import "k8s.io/apimachinery/pkg/runtime/schema"
+import (
+	"sigs.k8s.io/kustomize/api/types"
+)
 
 type Replacement struct {
-	Source   Source
-	Selector Selector
-	Targets  []Target
+	Source  Source   `json:",inline,omitempty" yaml:",inline,omitempty"`
+	Targets []Target `json:"targets,omitempty" yaml:"targets,omitempty"`
 }
 
 type Source struct {
-	GVK  schema.GroupVersionKind
-	Name string
+	types.Selector `json:",inline,omitempty" yaml:",inline,omitempty"`
+	Expression     string `json:"expression,omitempty" yaml:"expression,omitempty"`
 }
 
 type Selector struct {
-	Expression string
+	Expression string `json:"expression,omitempty" yaml:"expression,omitempty"`
 }
 
 type Target struct {
-	GVK          schema.GroupVersionKind
-	Name         string
-	Replacements []Replace
+	types.Selector `json:",inline,omitempty" yaml:",inline,omitempty"`
+	Replacements   []Replace `json:"replacements,omitempty" yaml:"replacements,omitempty"`
 }
 
 type Replace struct {
-	Selector string
-	With     string
+	Target string `json:"field,omitempty" yaml:"field,omitempty"`
+	Source string `json:"value,omitempty" yaml:"value,omitempty"`
 }
