@@ -63,7 +63,7 @@ deps:
 
 .PHONY: publish
 publish: ko ## Deploy test app.
-	KO_DOCKER_REPO=quay.io/lburgazzoli $(LOCALBIN)/ko build --platform=linux/amd64,linux/arm64. -B .
+	KO_DOCKER_REPO=quay.io/lburgazzoli $(LOCALBIN)/ko build --platform=linux/amd64,linux/arm64 -B .
 
 .PHONY: check/lint
 check: check/lint
