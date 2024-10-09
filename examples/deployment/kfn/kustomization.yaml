@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
 - resources.yaml
 transformers:
-- jq-config.yaml
+- kfn-config.yaml
 
