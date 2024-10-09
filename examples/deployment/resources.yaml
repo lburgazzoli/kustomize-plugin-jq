@@ -1,5 +1,5 @@
 ---
-apiVersion: components.opendatahub.io/v1alpha1
+apiVersion: components.lburgazzoli.github.io/v1alpha1
 kind: Configuration
 metadata:
   name: foo-config
@@ -8,10 +8,14 @@ spec:
     resources:
       type: fixed
       fixed:
+        replicas: 1
         resources:
           limits:
             cpu: 123m
-            memory: 456i
+            memory: 456Mi
+          requests:
+            cpu: 321m
+            memory: 654Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -21,19 +25,15 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      control-plane: odh-component
+      control-plane: foo-component
   template:
     metadata:
       labels:
         app: odh-component
-        app.opendatahub.io/odh-component: "true"
-        control-plane: odh-component
     spec:
       containers:
         - name: manager
-          image: quay.io/opendatahub/odh-component:latest
-          ports:
-            - containerPort: 8080
+          image: quay.io/lburgazzoli/component:latest
           resources:
             limits:
               cpu: 500m
