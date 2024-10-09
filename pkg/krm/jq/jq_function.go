@@ -1,6 +1,7 @@
 package jq
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/itchyny/gojq"
@@ -58,6 +59,14 @@ func SelectSource(replacement Replacement, nodes ...*yaml.RNode) (*yaml.RNode, e
 	resources, err := SelectNodes(replacement.Source.Selector, nodes...)
 	if err != nil {
 		return nil, err
+	}
+
+	if replacement.Source.Expression == "" && len(nodes) == 1 {
+		return nodes[0], nil
+	}
+
+	if replacement.Source.Expression == "" && len(nodes) != 1 {
+		return nil, errors.New("unable to determine source node")
 	}
 
 	query, err := gojq.Parse(replacement.Source.Expression)
