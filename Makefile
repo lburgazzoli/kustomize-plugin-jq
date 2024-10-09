@@ -37,11 +37,8 @@ all: build
 
 .PHONY: build
 build: $(LOCALBIN)
-	go build -o $(LOCALBIN)/jq-transform main.go
+	go build -o $(LOCALBIN)/kfm-transform main.go
 
-.PHONY: run
-run:
-	go run main.go examples/deployment/jq-config.yaml examples/deployment/resources.yaml
 
 .PHONY: clean
 clean:
