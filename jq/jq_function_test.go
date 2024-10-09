@@ -77,7 +77,7 @@ spec:
   template:
     metadata:
       labels:
-        app: odh-component
+        app: foo-component
     spec:
       containers:
         - name: manager
