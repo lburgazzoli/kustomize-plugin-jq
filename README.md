@@ -1,6 +1,5 @@
 # kustomize-plugin-jq
 
-[source,shell]
-----
+```shell
 kustomize build --enable-alpha-plugins --enable-exec examples/deployment
-----
+```
