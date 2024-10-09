@@ -18,7 +18,7 @@ import (
 )
 
 const c = `
-apiVersion: kustomize.opendatahub.io/v1alpha1
+apiVersion: kustomize.lburgazzoli.github.io/v1alpha1
 kind: JQTransform
 metadata:
   name: jq-transformer
@@ -29,7 +29,7 @@ metadata:
 spec:
   replacements:
     - source:
-        group: components.opendatahub.io
+        group: components.lburgazzoli.github.io
         version: v1alpha1
         kind: Configuration
         name: 'foo-config'
@@ -47,7 +47,7 @@ spec:
 
 const v = `
 ---
-apiVersion: components.opendatahub.io/v1alpha1
+apiVersion: components.lburgazzoli.github.io/v1alpha1
 kind: Configuration
 metadata:
   name: foo-config
@@ -73,7 +73,7 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      control-plane: odh-component
+      control-plane: foo-component
   template:
     metadata:
       labels:
@@ -81,7 +81,7 @@ spec:
     spec:
       containers:
         - name: manager
-          image: quay.io/opendatahub/odh-component:latest
+          image: quay.io/lburgazzoli/component:latest
           resources:
             limits:
               cpu: 500m
