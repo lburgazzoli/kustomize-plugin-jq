@@ -91,7 +91,7 @@ spec:
               memory: 64Mi
 `
 
-func TestJS(t *testing.T) {
+func TestJQ(t *testing.T) {
 	t.Parallel()
 
 	g := NewWithT(t)
