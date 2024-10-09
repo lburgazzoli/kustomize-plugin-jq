@@ -2,9 +2,10 @@ package jq_test
 
 import (
 	"errors"
-	jq2 "github.com/lburgazzoli/kustomize-plugin-jq/pkg/krm/jq"
 	"io"
 	"strings"
+
+	jq2 "github.com/lburgazzoli/kustomize-plugin-jq/pkg/krm/jq"
 
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
 	"sigs.k8s.io/kustomize/kyaml/kio"
