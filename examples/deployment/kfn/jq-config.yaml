@@ -20,6 +20,6 @@ spec:
           kind: Deployment
           name: 'foo-deployment'
           expressions:
-            - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $s.spec.configuration.resources.fixed.resources.limits'
-            - '.spec.template.spec.containers[0].resources.requests = $s.spec.configuration.resources.fixed.resources.requests'
-            - '.spec.replicas = $s.spec.configuration.resources.fixed.replicas'
+            - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $foo_config.spec.configuration.resources.fixed.resources.limits'
+            - '.spec.template.spec.containers[0].resources.requests = $foo_config.spec.configuration.resources.fixed.resources.requests'
+            - '.spec.replicas = $foo_config.spec.configuration.resources.fixed.replicas'
