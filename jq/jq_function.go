@@ -37,7 +37,10 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 
 			for _, tn := range targetNodes {
 				for _, r := range t.Expressions {
-					v, err := Run(r, tn, sm)
+					v, err := Run(r, tn, map[string]any{
+						"$" + source.GetName(): sm,
+					})
+
 					if err != nil {
 						return nil, err
 					}

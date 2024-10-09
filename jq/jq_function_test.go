@@ -24,8 +24,8 @@ metadata:
   name: jq-transformer
   annotations:
     config.kubernetes.io/function: |
-      exec:
-        path: ../../bin/jq-transform
+      container:
+        image: quay.io/lburgazzoli/kustomize-plugin-jq:latest
 spec:
   replacements:
     - source:
@@ -40,9 +40,9 @@ spec:
         kind: Deployment
         name: 'foo-deployment'
         expressions:
-        - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $s.spec.configuration.resources.fixed.resources.limits'
-        - '.spec.template.spec.containers[0].resources.requests = $s.spec.configuration.resources.fixed.resources.requests'
-        - '.spec.replicas = $s.spec.configuration.resources.fixed.replicas'
+        - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $foo_config.spec.configuration.resources.fixed.resources.limits'
+        - '.spec.template.spec.containers[0].resources.requests = $foo_config.spec.configuration.resources.fixed.resources.requests'
+        - '.spec.replicas = $foo_config.spec.configuration.resources.fixed.replicas'
 `
 
 const v = `

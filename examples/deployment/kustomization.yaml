@@ -2,15 +2,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - resources.yaml
-transformers:
+generators:
 - jq-config.yaml
-
-patches:
-# remove the temporary Configuration resource used as a source
-# for deployment configuration
-- patch: |
-    $patch: delete
-    apiVersion: components.lburgazzoli.github.io/v1alpha1
-    kind: Configuration
-    metadata:
-      name: foo-config
