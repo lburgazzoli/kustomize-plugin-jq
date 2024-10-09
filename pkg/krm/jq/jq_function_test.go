@@ -2,10 +2,10 @@ package jq_test
 
 import (
 	"errors"
+	jq2 "github.com/lburgazzoli/kustomize-plugin-jq/pkg/krm/jq"
 	"io"
 	"strings"
 
-	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
 	"sigs.k8s.io/kustomize/kyaml/kio"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
@@ -95,12 +95,12 @@ func TestJS(t *testing.T) {
 	t.Parallel()
 
 	g := NewWithT(t)
-	cfg := jq.Configuration{}
+	cfg := jq2.Configuration{}
 
 	p := framework.SimpleProcessor{
 		Config: &cfg,
 		Filter: kio.FilterFunc(func(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
-			f := jq.Function{
+			f := jq2.Function{
 				Replacements: cfg.Spec.Replacements,
 			}
 

@@ -1,9 +1,9 @@
 package main
 
 import (
+	jq2 "github.com/lburgazzoli/kustomize-plugin-jq/pkg/krm/jq"
 	"os"
 
-	"github.com/lburgazzoli/kustomize-plugin-jq/jq"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework"
 	"sigs.k8s.io/kustomize/kyaml/fn/framework/command"
 	"sigs.k8s.io/kustomize/kyaml/kio"
@@ -11,12 +11,12 @@ import (
 )
 
 func main() {
-	c := jq.Configuration{}
+	c := jq2.Configuration{}
 
 	p := framework.SimpleProcessor{
 		Config: &c,
 		Filter: kio.FilterFunc(func(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
-			f := jq.Function{
+			f := jq2.Function{
 				Replacements: c.Spec.Replacements,
 			}
 
