@@ -40,7 +40,9 @@ spec:
         kind: Deployment
         name: 'foo-deployment'
         expressions:
-        - '.spec.template.spec.containers[0].resources.limits = $s.spec.configuration.resources.fixed.resources.limits'
+        - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $s.spec.configuration.resources.fixed.resources.limits'
+        - '.spec.template.spec.containers[0].resources.requests = $s.spec.configuration.resources.fixed.resources.requests'
+        - '.spec.replicas = $s.spec.configuration.resources.fixed.replicas'
 `
 
 const v = `
@@ -54,10 +56,14 @@ spec:
     resources:
       type: fixed
       fixed:
+        replicas: 1
         resources:
           limits:
             cpu: 123m
             memory: 456Mi
+          requests:
+            cpu: 321m
+            memory: 654Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -72,14 +78,10 @@ spec:
     metadata:
       labels:
         app: odh-component
-        app.opendatahub.io/odh-component: "true"
-        control-plane: odh-component
     spec:
       containers:
         - name: manager
           image: quay.io/opendatahub/odh-component:latest
-          ports:
-            - containerPort: 8080
           resources:
             limits:
               cpu: 500m
@@ -124,10 +126,19 @@ func TestJS(t *testing.T) {
 	g.Expect(items).To(HaveLen(2))
 
 	g.Expect(items[1]).Should(
-		WithTransform(gyq.Extract(`.spec.template.spec.containers[0].resources.limits`),
+		WithTransform(gyq.Extract(`.spec.template.spec.containers[0].resources`),
 			And(
-				gyq.Match(`.cpu == "123m"`),
-				gyq.Match(`.memory == "456Mi"`),
+				gyq.Match(`.limits.cpu == "123m"`),
+				gyq.Match(`.limits.memory == "456Mi"`),
+				gyq.Match(`.requests.cpu == "321m"`),
+				gyq.Match(`.requests.memory == "654Mi"`),
+			),
+		),
+	)
+	g.Expect(items[1]).Should(
+		WithTransform(gyq.Extract(`.spec`),
+			And(
+				gyq.Match(`.replicas == "1"`),
 			),
 		),
 	)
