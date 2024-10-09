@@ -13,7 +13,6 @@ type Function struct {
 	Replacements []Replacement `json:"replacements,omitempty" yaml:"replacements,omitempty"`
 }
 
-//nolint:gocognit,cyclop
 func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 	for _, rp := range p.Replacements {
 		source, err := SelectSource(rp, nodes...)
@@ -38,32 +37,12 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 
 			for _, tn := range targetNodes {
 				for _, r := range t.Expressions {
-					tm, err := tn.Map()
-					if err != nil {
-						return nil, fmt.Errorf("unable to map target %v: %w", tn, err)
-					}
-
-					sq, err := gojq.Parse(r)
-					if err != nil {
-						return nil, fmt.Errorf("unable to parse expression %s, %w", r, err)
-					}
-
-					sqc, err := gojq.Compile(sq, gojq.WithVariables([]string{"$s"}))
-					if err != nil {
-						return nil, fmt.Errorf("unable to compile expression %s, %w", r, err)
-					}
-
-					v, err := Run(sqc, tm, sm)
+					v, err := Run(r, tn, sm)
 					if err != nil {
 						return nil, err
 					}
 
-					n, err := yaml.FromMap(v.(map[string]any))
-					if err != nil {
-						return nil, fmt.Errorf("unable to map target %v: %w", tn, err)
-					}
-
-					*tn = *n
+					*tn = *v
 				}
 			}
 		}

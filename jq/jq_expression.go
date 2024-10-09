@@ -3,6 +3,8 @@ package jq
 import (
 	"fmt"
 
+	"sigs.k8s.io/kustomize/kyaml/yaml"
+
 	"github.com/itchyny/gojq"
 )
 
@@ -34,8 +36,23 @@ func Matches(query *gojq.Query, data map[string]interface{}) (bool, error) {
 	return false, nil
 }
 
-func Run(query *gojq.Code, data map[string]interface{}, values ...any) (any, error) {
-	it := query.Run(data, values...)
+func Run(expression string, node *yaml.RNode, values ...any) (*yaml.RNode, error) {
+	data, err := node.Map()
+	if err != nil {
+		return nil, fmt.Errorf("unable to map target %v: %w", data, err)
+	}
+
+	sq, err := gojq.Parse(expression)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse expression %s, %w", expression, err)
+	}
+
+	sqc, err := gojq.Compile(sq, gojq.WithVariables([]string{"$s"}))
+	if err != nil {
+		return nil, fmt.Errorf("unable to compile expression %s, %w", expression, err)
+	}
+
+	it := sqc.Run(data, values...)
 
 	v, ok := it.Next()
 	if !ok {
@@ -46,5 +63,10 @@ func Run(query *gojq.Code, data map[string]interface{}, values ...any) (any, err
 		return nil, err
 	}
 
-	return v, nil
+	ret, err := yaml.FromMap(v.(map[string]any))
+	if err != nil {
+		return nil, fmt.Errorf("unable to map target %v: %w", data, err)
+	}
+
+	return ret, nil
 }
