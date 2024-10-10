@@ -1,0 +1,25 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      control-plane: foo-component
+  template:
+    metadata:
+      labels:
+        app: foo-component
+    spec:
+      containers:
+        - name: manager
+          image: quay.io/lburgazzoli/component:latest
+          resources:
+            limits:
+              cpu: 500m
+              memory: 2Gi
+            requests:
+              cpu: 10m
+              memory: 64Mi
