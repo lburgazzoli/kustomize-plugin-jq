@@ -8,14 +8,19 @@ metadata:
         image: quay.io/lburgazzoli/kustomize-plugin-jq:latest
 spec:
   replacements:
-    - source:
-        selector:
-          group: components.lburgazzoli.github.io
-          version: v1alpha1
-          kind: Configuration
-          name: 'foo-config'
-          predicate: '.spec.configuration.resources.type == "fixed"'
-        name: '$fc'
+    - sources:
+        - selector:
+            group: components.lburgazzoli.github.io
+            version: v1alpha1
+            kind: Configuration
+            name: 'foo-config'
+            predicate: '.spec.configuration.resources.type == "fixed"'
+          name: '$fc'
+        - selector:
+            version: v1
+            kind: ConfigMap
+            name: 'foo-cm'
+          name: '$fcm'
       targets:
         - selector:
             group: apps
@@ -25,4 +30,5 @@ spec:
           expressions:
             - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $fc.spec.configuration.resources.fixed.resources.limits'
             - '.spec.template.spec.containers[0].resources.requests = $fc.spec.configuration.resources.fixed.resources.requests'
+            - '.spec.template.spec.containers[0].image = $fcm.data.image'
             - '.spec.replicas = $fc.spec.configuration.resources.fixed.replicas'

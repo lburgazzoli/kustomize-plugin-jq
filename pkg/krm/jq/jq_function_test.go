@@ -29,14 +29,19 @@ metadata:
         image: quay.io/lburgazzoli/kustomize-plugin-jq:latest
 spec:
   replacements:
-    - source:
-        selector:
-          group: components.lburgazzoli.github.io
-          version: v1alpha1
-          kind: Configuration
-          name: 'foo-config'
-          predicate: '.spec.configuration.resources.type == "fixed"'
-        name: '$fc'
+    - sources:
+        - selector:
+            group: components.lburgazzoli.github.io
+            version: v1alpha1
+            kind: Configuration
+            name: 'foo-config'
+            predicate: '.spec.configuration.resources.type == "fixed"'
+          name: '$fc'
+        - selector:
+            version: v1
+            kind: ConfigMap
+            name: 'foo-cm'
+          name: '$fcm'
       targets:
       - selector:
           group: apps
@@ -46,10 +51,18 @@ spec:
         expressions:
         - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $fc.spec.configuration.resources.fixed.resources.limits'
         - '.spec.template.spec.containers[0].resources.requests = $fc.spec.configuration.resources.fixed.resources.requests'
+        - '.spec.template.spec.containers[0].image = $fcm.data.image'
         - '.spec.replicas = $fc.spec.configuration.resources.fixed.replicas'
 `
 
 const v = `
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foo-cm
+data:
+  image: "quay.io/lburgazzoli/component:v1.1"
 ---
 apiVersion: components.lburgazzoli.github.io/v1alpha1
 kind: Configuration
@@ -127,9 +140,16 @@ func TestJQ(t *testing.T) {
 
 	items, err := w.Items()
 	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(items).To(HaveLen(2))
+	g.Expect(items).To(HaveLen(3))
 
-	g.Expect(items[1]).Should(
+	g.Expect(items[2]).Should(
+		WithTransform(gyq.Extract(`.spec.template.spec.containers[0]`),
+			And(
+				gyq.Match(`.image == "quay.io/lburgazzoli/component:v1.1"`),
+			),
+		),
+	)
+	g.Expect(items[2]).Should(
 		WithTransform(gyq.Extract(`.spec.template.spec.containers[0].resources`),
 			And(
 				gyq.Match(`.limits.cpu == "123m"`),
@@ -139,7 +159,7 @@ func TestJQ(t *testing.T) {
 			),
 		),
 	)
-	g.Expect(items[1]).Should(
+	g.Expect(items[2]).Should(
 		WithTransform(gyq.Extract(`.spec`),
 			And(
 				gyq.Match(`.replicas == "1"`),

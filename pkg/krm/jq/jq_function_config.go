@@ -17,7 +17,7 @@ type ConfigurationSpec struct {
 }
 
 type Replacement struct {
-	Source  Source   `json:",inline,omitempty" yaml:",inline,omitempty"`
+	Sources []Source `json:"sources,omitempty" yaml:"targets,omitempty"`
 	Targets []Target `json:"targets,omitempty" yaml:"targets,omitempty"`
 }
 

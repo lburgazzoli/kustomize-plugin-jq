@@ -17,18 +17,9 @@ type Function struct {
 
 func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 	for _, rp := range p.Replacements {
-		source, err := SelectSource(rp, nodes...)
+		sources, err := SelectSources(rp, nodes...)
 		if err != nil {
 			return nil, err
-		}
-
-		if source == nil {
-			continue
-		}
-
-		sm, err := source.Map()
-		if err != nil {
-			return nil, fmt.Errorf("unable to map source for replacement %v: %w", rp, err)
 		}
 
 		for _, t := range rp.Targets {
@@ -39,23 +30,7 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 
 			for _, tn := range targetNodes {
 				for _, r := range t.Expressions {
-					n := rp.Source.Name
-					if n == "" {
-						n = source.GetName()
-					}
-
-					n = strings.ToLower(n)
-					n = strings.ReplaceAll(n, "-", "_")
-					n = strings.ReplaceAll(n, ".", "_")
-
-					if !strings.HasPrefix(n, "$") {
-						n = "$" + n
-					}
-
-					v, err := Run(r, tn, map[string]any{
-						n: sm,
-					})
-
+					v, err := Run(r, tn, sources)
 					if err != nil {
 						return nil, err
 					}
@@ -69,23 +44,61 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 	return nodes, nil
 }
 
-func SelectSource(replacement Replacement, nodes ...*yaml.RNode) (*yaml.RNode, error) {
-	resources, err := SelectNodes(replacement.Source.Selector, nodes...)
+type ResolvedReplacement struct {
+	R Replacement
+	N *yaml.RNode
+}
+
+func SelectSources(replacement Replacement, nodes ...*yaml.RNode) (map[string]any, error) {
+	answer := make(map[string]any)
+
+	for _, s := range replacement.Sources {
+		selected, err := SelectSource(s, nodes...)
+		if err != nil {
+			return nil, err
+		}
+
+		n := s.Name
+		if n == "" {
+			n = selected.GetName()
+		}
+
+		n = strings.ToLower(n)
+		n = strings.ReplaceAll(n, "-", "_")
+		n = strings.ReplaceAll(n, ".", "_")
+
+		if !strings.HasPrefix(n, "$") {
+			n = "$" + n
+		}
+
+		sm, err := selected.Map()
+		if err != nil {
+			return nil, fmt.Errorf("unable to map source for replacement %v: %w", replacement, err)
+		}
+
+		answer[n] = sm
+	}
+
+	return answer, nil
+}
+
+func SelectSource(source Source, nodes ...*yaml.RNode) (*yaml.RNode, error) {
+	resources, err := SelectNodes(source.Selector, nodes...)
 	if err != nil {
 		return nil, err
 	}
 
-	if replacement.Source.Selector.Predicate == "" && len(nodes) == 1 {
+	if source.Selector.Predicate == "" && len(resources) == 1 {
 		return nodes[0], nil
 	}
 
-	if replacement.Source.Selector.Predicate == "" && len(nodes) != 1 {
+	if source.Selector.Predicate == "" && len(resources) != 1 {
 		return nil, errors.New("unable to determine source node")
 	}
 
-	query, err := gojq.Parse(replacement.Source.Selector.Predicate)
+	query, err := gojq.Parse(source.Selector.Predicate)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse expression %s, %w", replacement.Source.Selector.Predicate, err)
+		return nil, fmt.Errorf("unable to parse expression %s, %w", source.Selector.Predicate, err)
 	}
 
 	for _, r := range resources {

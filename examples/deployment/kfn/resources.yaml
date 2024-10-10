@@ -1,4 +1,11 @@
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foo-cm
+data:
+  image: "quay.io/lburgazzoli/component:v1.1"
+---
 apiVersion: components.lburgazzoli.github.io/v1alpha1
 kind: Configuration
 metadata:

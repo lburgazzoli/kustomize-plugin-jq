@@ -12,3 +12,9 @@ patches:
       kind: Configuration
       metadata:
         name: foo-config
+  - patch: |
+      $patch: delete
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: foo-cm
