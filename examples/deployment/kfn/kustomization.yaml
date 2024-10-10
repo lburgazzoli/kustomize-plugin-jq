@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
 - resources.yaml
 transformers:
-- kfn-config.yaml
+- krm-config.yaml
 
