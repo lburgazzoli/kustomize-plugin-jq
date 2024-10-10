@@ -89,7 +89,7 @@ func SelectSource(source Source, nodes ...*yaml.RNode) (*yaml.RNode, error) {
 	}
 
 	if source.Selector.Predicate == "" && len(resources) == 1 {
-		return nodes[0], nil
+		return resources[0], nil
 	}
 
 	if source.Selector.Predicate == "" && len(resources) != 1 {

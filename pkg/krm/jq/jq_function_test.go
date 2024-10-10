@@ -35,7 +35,6 @@ spec:
             version: v1alpha1
             kind: Configuration
             name: 'foo-config'
-            predicate: '.spec.configuration.resources.type == "fixed"'
           name: '$fc'
         - selector:
             version: v1
@@ -49,10 +48,13 @@ spec:
           kind: Deployment
           name: 'foo-deployment'
         expressions:
-        - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $fc.spec.configuration.resources.fixed.resources.limits'
-        - '.spec.template.spec.containers[0].resources.requests = $fc.spec.configuration.resources.fixed.resources.requests'
+        - |
+          if ( $fc.spec.configuration.resources.type == "fixed" )
+          then
+            . | (.spec.template.spec.containers[] | select(.name == "manager")).resources |= $fc.spec.configuration.resources.fixed.resources
+              | .spec.replicas = $fc.spec.configuration.resources.fixed.replicas
+          end
         - '.spec.template.spec.containers[0].image = $fcm.data.image'
-        - '.spec.replicas = $fc.spec.configuration.resources.fixed.replicas'
 `
 
 const v = `
@@ -166,6 +168,8 @@ func TestJQ(t *testing.T) {
 			),
 		),
 	)
+
+	// t.Log("\n" + w.String())
 }
 
 type DocumentSplitter struct {
@@ -207,4 +211,8 @@ func (in *DocumentSplitter) Items() ([]string, error) {
 	}
 
 	return items, nil
+}
+
+func (in *DocumentSplitter) String() string {
+	return in.buffer.String()
 }
