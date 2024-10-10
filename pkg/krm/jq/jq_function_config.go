@@ -22,11 +22,16 @@ type Replacement struct {
 }
 
 type Source struct {
+	Selector Selector `json:"selector,omitempty" yaml:"selector,omitempty"`
+	Name     string   `json:"name,omitempty" yaml:"name,omitempty"`
+}
+
+type Selector struct {
 	types.Selector `json:",inline,omitempty" yaml:",inline,omitempty"`
-	Expression     string `json:"expression,omitempty" yaml:"expression,omitempty"`
+	Predicate      string `json:"predicate,omitempty" yaml:"predicate,omitempty"`
 }
 
 type Target struct {
-	types.Selector `json:",inline,omitempty" yaml:",inline,omitempty"`
-	Expressions    []string `json:"expressions,omitempty" yaml:"expressions,omitempty"`
+	Selector    Selector `json:"selector,omitempty" yaml:"selector,omitempty"`
+	Expressions []string `json:"expressions,omitempty" yaml:"expressions,omitempty"`
 }

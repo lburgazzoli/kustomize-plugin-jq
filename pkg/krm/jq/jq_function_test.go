@@ -30,20 +30,23 @@ metadata:
 spec:
   replacements:
     - source:
-        group: components.lburgazzoli.github.io
-        version: v1alpha1
-        kind: Configuration
-        name: 'foo-config'
-        expression: '.spec.configuration.resources.type == "fixed"'
+        selector:
+          group: components.lburgazzoli.github.io
+          version: v1alpha1
+          kind: Configuration
+          name: 'foo-config'
+          predicate: '.spec.configuration.resources.type == "fixed"'
+        name: '$fc'
       targets:
-      - group: apps
-        version: v1
-        kind: Deployment
-        name: 'foo-deployment'
+      - selector:
+          group: apps
+          version: v1
+          kind: Deployment
+          name: 'foo-deployment'
         expressions:
-        - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $foo_config.spec.configuration.resources.fixed.resources.limits'
-        - '.spec.template.spec.containers[0].resources.requests = $foo_config.spec.configuration.resources.fixed.resources.requests'
-        - '.spec.replicas = $foo_config.spec.configuration.resources.fixed.replicas'
+        - '(.spec.template.spec.containers[] | select(.name == "manager")).resources.limits |= $fc.spec.configuration.resources.fixed.resources.limits'
+        - '.spec.template.spec.containers[0].resources.requests = $fc.spec.configuration.resources.fixed.resources.requests'
+        - '.spec.replicas = $fc.spec.configuration.resources.fixed.replicas'
 `
 
 const v = `

@@ -2,8 +2,6 @@ package jq
 
 import (
 	"fmt"
-	"strings"
-
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 
 	"github.com/itchyny/gojq"
@@ -52,12 +50,6 @@ func Run(expression string, node *yaml.RNode, values map[string]any) (*yaml.RNod
 	vals := make([]any, 0, len(values))
 
 	for k, v := range values {
-		if !strings.HasPrefix(k, "$") {
-			k = "$" + k
-		}
-
-		k = strings.ReplaceAll(k, "-", "_")
-
 		keys = append(keys, k)
 		vals = append(vals, v)
 	}

@@ -3,6 +3,7 @@ package jq
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/itchyny/gojq"
 	"sigs.k8s.io/kustomize/api/types"
@@ -38,8 +39,21 @@ func (p *Function) Apply(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 
 			for _, tn := range targetNodes {
 				for _, r := range t.Expressions {
+					n := rp.Source.Name
+					if n == "" {
+						n = source.GetName()
+					}
+
+					n = strings.ToLower(n)
+					n = strings.ReplaceAll(n, "-", "_")
+					n = strings.ReplaceAll(n, ".", "_")
+
+					if !strings.HasPrefix(n, "$") {
+						n = "$" + n
+					}
+
 					v, err := Run(r, tn, map[string]any{
-						"$" + source.GetName(): sm,
+						n: sm,
 					})
 
 					if err != nil {
@@ -61,17 +75,17 @@ func SelectSource(replacement Replacement, nodes ...*yaml.RNode) (*yaml.RNode, e
 		return nil, err
 	}
 
-	if replacement.Source.Expression == "" && len(nodes) == 1 {
+	if replacement.Source.Selector.Predicate == "" && len(nodes) == 1 {
 		return nodes[0], nil
 	}
 
-	if replacement.Source.Expression == "" && len(nodes) != 1 {
+	if replacement.Source.Selector.Predicate == "" && len(nodes) != 1 {
 		return nil, errors.New("unable to determine source node")
 	}
 
-	query, err := gojq.Parse(replacement.Source.Expression)
+	query, err := gojq.Parse(replacement.Source.Selector.Predicate)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse expression %s, %w", replacement.Source.Expression, err)
+		return nil, fmt.Errorf("unable to parse expression %s, %w", replacement.Source.Selector.Predicate, err)
 	}
 
 	for _, r := range resources {
@@ -93,10 +107,10 @@ func SelectSource(replacement Replacement, nodes ...*yaml.RNode) (*yaml.RNode, e
 	return nil, nil
 }
 
-func SelectNodes(s types.Selector, nodes ...*yaml.RNode) ([]*yaml.RNode, error) {
+func SelectNodes(s Selector, nodes ...*yaml.RNode) ([]*yaml.RNode, error) {
 	result := make([]*yaml.RNode, 0)
 
-	sr, err := types.NewSelectorRegex(&s)
+	sr, err := types.NewSelectorRegex(&s.Selector)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create selector regex, %w", err)
 	}
