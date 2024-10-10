@@ -33,10 +33,4 @@ spec:
                 . | (.spec.template.spec.containers[] | select(.name == "manager")).resources |= $fc.spec.configuration.resources.fixed.resources
                   | .spec.replicas = $fc.spec.configuration.resources.fixed.replicas
               end
-            - |
-              if ( $fc.spec.configuration.resources.type == "fixed" )
-              then
-                .spec.replicas = $fc.spec.configuration.resources.fixed.replicas
-              end
             - '.spec.template.spec.containers[0].image = $fcm.data.image'
-            - '.spec.replicas = $fc.spec.configuration.resources.fixed.replicas'
